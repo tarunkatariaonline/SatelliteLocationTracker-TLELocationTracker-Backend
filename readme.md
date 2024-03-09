@@ -16,7 +16,7 @@ To install and run this project locally, follow these steps:
 
 1. Clone this repository.
 2. Install dependencies by running `npm install`.
-3. Start the server by running `npm start`.
+3. Start the server by running `nodemon index.js` (Should install nodemon before command).
 4. Access the API endpoints to retrieve satellite location data.
 
 ## Usage
