@@ -8,13 +8,15 @@ require('dotenv').config({
     path:'./config.env'
 })
 
+const app = express()
+
 app.use(cors({
     "origin": "*",
     "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
     
 }))
 // console.log(process.env.PORT)
-const app = express()
+
 const port = process.env.PORT
 
 
