@@ -39,6 +39,18 @@ mongoose.connect(process.env.DATABASE)
 const Satellite = mongoose.model('Satellite', satelliteSchema);
 
 
+
+async function fetchStarklinkTLEData() {
+    try {
+        const response = await axios.get('https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching TLE data:', error);
+        return null;
+    }
+}
+
+
 async function fetchTLEData() {
     try {
         const response = await axios.get('https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=tle');
@@ -55,7 +67,11 @@ const getAllSateliteData  = async()=>{
    if(dbSatellites.length===0){
 
   
-    const tleData = await fetchTLEData();
+   
+    const issData = await fetchTLEData();
+    const starlinkTleData = await fetchStarklinkTLEData();
+    
+    const tleData = issData+'\n'+starlinkTleData;
 
 // const tempData = await fetchTLEData();
 // console.log(tempData)
