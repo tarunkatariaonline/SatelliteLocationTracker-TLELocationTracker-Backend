@@ -3,12 +3,19 @@ const { getLatLngObj } = require("tle.js/dist/tlejs.cjs");
 var TLE = require( 'tle' )
 const express = require('express')
 const mongoose = require('mongoose');
+var cors = require('cors')
 require('dotenv').config({
     path:'./config.env'
 })
+
+app.use(cors({
+    "origin": "*",
+    "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+    
+}))
 // console.log(process.env.PORT)
 const app = express()
-const port = 3000
+const port = process.env.PORT
 
 
 
@@ -147,5 +154,5 @@ res.json(satellites);
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${3000}`)
+  console.log(`Example app listening on port ${process.env.PORT}`)
 })
