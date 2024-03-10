@@ -17,29 +17,9 @@ mongoose.connect(process.env.DATABASE)
 
 
   const satelliteSchema = new mongoose.Schema({
-    name: String,
-    number: Number,
-    class: String,
-    id: String,
-    date: Date,
-    fdmm: Number,
-    sdmm: Number,
-    drag: Number,
-    ephemeris: Number,
-    esn: Number,
-    inclination: Number,
-    ascension: Number,
-    eccentricity: Number,
-    perigee: Number,
-    anomaly: Number,
-    motion: Number,
-    revolution: Number,
-    lat: {
-        type: mongoose.Schema.Types.Mixed
-    },
-    lng: {
-        type: mongoose.Schema.Types.Mixed
-    },
+    satelliteName: String,
+    line1: String,
+    line2: String,
     createdAt: {
         type: Date,
         default: Date.now
@@ -61,6 +41,11 @@ async function fetchTLEData() {
 }
 
 const getAllSateliteData  = async()=>{
+
+   const dbSatellites = await Satellite.find();
+   if(dbSatellites.length===0){
+
+  
     const tleData = await fetchTLEData();
 
 // const tempData = await fetchTLEData();
@@ -98,11 +83,13 @@ for (let line of lines) {
     }
 }
 
+
+const satelliteData = await Satellite.create(...tleDataArray);
 for(let i =0;i<tleDataArray.length;i++){
     // console.log(tleDataArray[i].satelliteName+'\n' +tleDataArray[i].line1+'\n'+tleDataArray[i].line2 );
     
     const tle = tleDataArray[i].satelliteName+'\n' +tleDataArray[i].line1+'\n'+tleDataArray[i].line2
-    const optionalTimestampMS = 1502342329860;
+    const optionalTimestampMS = Date.now();
 const latLonObj = getLatLngObj(tle, optionalTimestampMS);
 var d = TLE.parse( tleDataArray[i].satelliteName+'\n'+tleDataArray[i].line1+'\n'+tleDataArray[i].line2 )
 const obj = {...d,...latLonObj}
@@ -113,8 +100,34 @@ alldata.push(obj);
 }
 
 return alldata;
-}
 
+   }else{
+    
+    const minDiff = minuteDiffrance(Date.now(),dbSatellites[0].createdAt);
+    if(minDiff>180){
+        await Satellite.deleteMany();
+        await getAllSateliteData();
+    }
+    const tleDataArray = dbSatellites;
+    let alldata = [];
+    for(let i =0;i<tleDataArray.length;i++){
+        // console.log(tleDataArray[i].satelliteName+'\n' +tleDataArray[i].line1+'\n'+tleDataArray[i].line2 );
+        
+        const tle = tleDataArray[i].satelliteName+'\n' +tleDataArray[i].line1+'\n'+tleDataArray[i].line2
+        const optionalTimestampMS = Date.now();
+    const latLonObj = getLatLngObj(tle, optionalTimestampMS);
+    var d = TLE.parse( tleDataArray[i].satelliteName+'\n'+tleDataArray[i].line1+'\n'+tleDataArray[i].line2 )
+    const obj = {...d,...latLonObj}
+    // console.log(obj)
+    alldata.push(obj);
+    // console.log(latLonObj)
+    
+    }
+    
+    return alldata;
+    
+   }
+}
 
 const minuteDiffrance = (date1,date2)=>{
     const diffInMilliseconds = Math.abs(date2 - date1);
@@ -123,44 +136,16 @@ const minuteDiffrance = (date1,date2)=>{
 
     return diffInMinutes;
 }
+
 app.get('/', async(req, res) => {
     
+const satellites = await getAllSateliteData();
 
  
+res.json(satellites);
 
-const date1 = new Date();
-const satellites = await Satellite.find();
-
-if(satellites.length===0){
-    let data=  await getAllSateliteData()
- 
-    const newSatellite = await Satellite.create(...data);
-
- return res.json(newSatellite);
-}
-
-const minDiff = minuteDiffrance(date1,satellites[0].createdAt);
-
-
-if(minDiff>180){
-    await Satellite.deleteMany();
-  let data=  await getAllSateliteData()
- 
- const newSatellite = await Satellite.create(...data);
-
- return res.json(newSatellite);
-}
-
-
-
-console.log("Difference in minutes:", minDiff);
-console.log(satellites)
-
-
-
-  res.json(satellites)
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${process.env.PORT}`)
+  console.log(`Example app listening on port ${3000}`)
 })
